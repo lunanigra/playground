@@ -4,6 +4,7 @@
 #include <TinyWireS.h>
 
 #define DEFAULT_I2C_ADDR 0x20
+#define MAX_SIZE 0x80
 
 #define LED_RX 3
 #define LED_TX 4
@@ -18,7 +19,7 @@ struct config_t
 {
   uint8_t address;
   uint8_t count;
-  uint8_t leds[0x80];
+  uint8_t leds[MAX_SIZE];
 } configuration;
 
 void setup()
@@ -29,7 +30,7 @@ void setup()
   EEPROM_readAnything(0x00, configuration);
 
   if (configuration.address < 0x20 || configuration.address > 0x2f) configuration.address = DEFAULT_I2C_ADDR;
-  if (configuration.count > 0x80) configuration.count = 0x80;
+  if (configuration.count > MAX_SIZE) configuration.count = MAX_SIZE;
 
   digitalWrite(LED_TX, HIGH);
   delay(250);
@@ -69,7 +70,7 @@ void handleCommuncationRequest()
   else if (cmd = CMD_GET_DATA)
   {
     uint8_t crc = 0xff;
-    for (uint8_t i = 0; i < configuration.count; i++)
+    for (uint8_t i = 0; i < MAX_SIZE; i++)
     {
       crc = crc_ibutton_update(crc, configuration.leds[i]);
       TinyWireS.send(configuration.leds[i]); 
