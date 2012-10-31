@@ -3,7 +3,6 @@
 #include <TinyWireS.h>
 
 #define DEFAULT_I2C_ADDR 0x20
-#define MAX_DATA_LENGTH 0x40
 
 #define LED_RX 3
 #define LED_TX 4
@@ -77,7 +76,7 @@ void receiveEvent(uint8_t num_bytes)
       }
       case 0x02:
       {
-        if (i2c_regs[2] > MAX_DATA_LENGTH) i2c_regs[2] = MAX_DATA_LENGTH;
+        if (i2c_regs[2] > sizeof(i2c_regs)) i2c_regs[2] = sizeof(i2c_regs);
         break;
       }
     }
@@ -104,7 +103,7 @@ void setup()
   regs_eeprom_read();
 
   if (i2c_regs[0] < 0x20 || i2c_regs[0] > 0x2f) i2c_regs[0] = DEFAULT_I2C_ADDR;
-  if (i2c_regs[2] > MAX_DATA_LENGTH) i2c_regs[2] = MAX_DATA_LENGTH;
+  if (i2c_regs[2] > sizeof(i2c_regs)) i2c_regs[2] = sizeof(i2c_regs);
 
   TinyWireS.begin(i2c_regs[0]);
   TinyWireS.onReceive(receiveEvent);
@@ -115,12 +114,23 @@ uint8_t idx = 0;
 
 void loop()
 {
-  digitalWrite(LED_TX, i2c_regs[idx + 3] & 0x01);
+  TinyWireS_stop_check();
+
+  if (write_eeprom)
+  {
+    // Store the offset etc configuration registers to EEPROM
+    write_eeprom = false;
+    regs_eeprom_write();
+  }
+
+  digitalWrite(LED_RX, i2c_regs[idx + 3] & 0x01);
+  digitalWrite(LED_TX, i2c_regs[idx + 3] & 0x02);
   idx = (idx + 1) % i2c_regs[2];
 
-  for (uint8_t i = 0; i < i2c_regs[1]; i++)
+  uint16_t maxCount = i2c_regs[1] * 125;
+  for (uint16_t i = 0; i < maxCount; i++)
   {
-    delay(1); // Sleep 1ms then check for I2C data
+    delayMicroseconds(8); // Sleep few micros tjhen check for I2C data again
 
     TinyWireS_stop_check();
 
