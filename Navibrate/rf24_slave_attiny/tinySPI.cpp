@@ -33,12 +33,12 @@ void SPIClass::begin() {
 #if defined(SPCR)
 
   // Set SS to high so a connected chip will be "deselected" by default
-  digitalWrite(SS, HIGH);
+  // digitalWrite(SS, HIGH);
 
   // When the SS pin is set as OUTPUT, it can be used as
   // a general purpose output port (it doesn't influence
   // SPI operations).
-  pinMode(SS, OUTPUT);
+  // pinMode(SS, OUTPUT);
 
   // Warning: if the SS pin ever becomes a LOW INPUT then SPI
   // automatically switches to Slave, so the data direction of
@@ -57,7 +57,7 @@ void SPIClass::begin() {
 
 #else
 
-  digitalWrite(SS, HIGH);
+  // digitalWrite(SS, HIGH);
   pinMode(USCK, OUTPUT);
   pinMode(DO, OUTPUT);
   pinMode(SS, OUTPUT);
