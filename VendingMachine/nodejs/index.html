@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Vending Machine</title>
+
+    <style type="text/css">
+        body {
+            font-family: "Arial", "Verdana", "sans-serif";
+            background-color: #fff;
+            color: #000;
+        }
+        table {
+            background-color: #aaa;
+        }
+        td {
+            padding: 20px;
+            background-color: #eee;
+            text-align: center;
+            font-size: 30px;
+            font-weight: bold;
+        }
+        .active {
+            background-color: #f00;
+        }
+        .selected {
+            background-color: #0f0;
+        }
+    </style>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('td').bind('click', function(event) {
+                $(this).addClass("selected").delay(500).queue(function() {
+                    $(this).removeClass("selected").dequeue();
+                });
+                $.ajax({
+                    type: "POST",
+                    data: JSON.stringify({ cmd: $(this).data('arduino'), time: $(this).data('time') })
+                });
+            });
+
+            var socket = io.connect();
+
+            // on every message recived we print the new datas inside the #container div
+            socket.on('notification', function (data) {
+                // convert the json string into a valid javascript object
+                $.each($('td'), function(index, value) {
+                    if ($(value).data('arduino') == data.status) {
+                        $(value).addClass('active');
+                    } else {
+                        $(value).removeClass('active');
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <h1>Vending Machine Control</h1>
+
+    <p>
+        Click on the desired box to select.
+    </p>
+
+    <table>
+        <tr>
+            <td colspan="2" data-arduino="A1" data-time="4000">A1</td>
+            <td colspan="2" data-arduino="A3" data-time="4000">A3</td>
+            <td colspan="2" data-arduino="A5" data-time="4000">A5</td>
+            <td colspan="2" data-arduino="A7" data-time="4000">A7</td>
+        </tr>
+        <tr>
+            <td colspan="2" data-arduino="B1">B1</td>
+            <td colspan="2" data-arduino="B3">B3</td>
+            <td colspan="2" data-arduino="B5">B5</td>
+            <td colspan="2" data-arduino="B7">B7</td>
+        </tr>
+        <tr>
+            <td data-arduino="C1">C1</td>
+            <td data-arduino="C2">C2</td>
+            <td data-arduino="C3">C3</td>
+            <td data-arduino="C4">C4</td>
+            <td data-arduino="C5">C5</td>
+            <td data-arduino="C6">C6</td>
+            <td data-arduino="C7">C7</td>
+            <td data-arduino="C8">C8</td>
+        </tr>
+        <tr>
+            <td data-arduino="D1">D1</td>
+            <td data-arduino="D2">D2</td>
+            <td data-arduino="D3">D3</td>
+            <td data-arduino="D4">D4</td>
+            <td data-arduino="D5">D5</td>
+            <td data-arduino="D6">D6</td>
+            <td data-arduino="D7">D7</td>
+            <td data-arduino="D8">D8</td>
+        </tr>
+        <tr>
+            <td colspan="2" data-arduino="E1">E1</td>
+            <td colspan="2" data-arduino="E3">E3</td>
+            <td colspan="2" data-arduino="E5">E5</td>
+            <td colspan="2" data-arduino="E7">E7</td>
+        </tr>
+    </table>
+</body>
+
+</html>
