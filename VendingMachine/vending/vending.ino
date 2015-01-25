@@ -8,11 +8,6 @@ void setup() {
 
   pinMode(13, OUTPUT);
 
-  /* for (int i = 30; i <= 45; i++) {
-    pinMode(i, OUTPUT);
-    digitalWrite(i, HIGH);
-  } */
-  
   for (int i = 0; i < 6; i++) {
     pinMode(ROWS[i], OUTPUT);
     digitalWrite(ROWS[i], HIGH);
@@ -27,20 +22,28 @@ void setup() {
 
 String current = "";
 String command;
-unsigned long blinkStart;
-unsigned long onTime;
-
+unsigned long startTime;
+unsigned long currentTime;
+unsigned long duration;
 
 void loop() {
   if (readCommand()) {
-    parseCommand();
+    Serial.print("Arduino - Processing command: ");
     Serial.println(command);
+
+    parseCommand();
     command = "";
   }
 
-  if (current != "" && millis() > blinkStart + onTime) {
+  currentTime = millis();
+  if (current != "" && currentTime > (startTime + duration)) {
+    Serial.print("Arduino - ");
+    Serial.print(current);
+    Serial.print(" stopped after ");
+    Serial.print(currentTime - startTime);
+    Serial.println(" ms.");
+
     for (int i = 0; i < 6; i++) {
-    pinMode(ROWS[i], OUTPUT);
       digitalWrite(ROWS[i], HIGH);
     }
     for (int i = 0; i < 8; i++) {
@@ -63,16 +66,16 @@ void parseCommand() {
 
   if (current == "" && action.length() == 2 && action.charAt(0) >= 'A' && action.charAt(0) <= 'F' && action.charAt(1) >= '1' && action.charAt(1) <= '8') {
     current = action;
-    onTime = DEFAULT_TIME;
+    duration = DEFAULT_TIME;
     if (idx != -1) {
-      onTime = command.substring(idx + 1).toInt();
+      duration = command.substring(idx + 1).toInt();
     }
+
+    startTime = millis();
 
     digitalWrite(ROWS[action.charAt(0) - 65], LOW);
     digitalWrite(COLS[action.charAt(1) - 49], LOW);
-    
     digitalWrite(13, HIGH);
-    blinkStart = millis();
 
     sendStatus();
   }
@@ -93,4 +96,3 @@ void sendStatus() {
   Serial.print("?");
   Serial.println(current);
 }
-
